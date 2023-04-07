@@ -4,6 +4,7 @@
 // https://www.w3schools.com/xml/dom_document.asp
 // https://docs.oracle.com/javase/7/docs/api/javax/xml/transform/TransformerFactory.html
 //https://docs.oracle.com/javase/7/docs/api/javax/xml/transform/stream/StreamResult.html#:~:text=public%20class%20StreamResult%20extends%20Object,some%20other%20form%20of%20markup.
+//https://www.w3schools.com/sql/sql_join.asp
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
