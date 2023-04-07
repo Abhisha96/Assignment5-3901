@@ -2,6 +2,8 @@
 //https://docs.oracle.com/javase/tutorial/jdbc/basics/index.html
 // https://www.w3schools.com/xml/met_document_createelement.asp
 // https://www.w3schools.com/xml/dom_document.asp
+// https://docs.oracle.com/javase/7/docs/api/javax/xml/transform/TransformerFactory.html
+//https://docs.oracle.com/javase/7/docs/api/javax/xml/transform/stream/StreamResult.html#:~:text=public%20class%20StreamResult%20extends%20Object,some%20other%20form%20of%20markup.
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -204,23 +206,26 @@ public class summary {
                 root.appendChild(new_product);
 
                 Element product_name = document.createElement("product_name");
-                product_name.appendChild(document.createTextNode(resultSet.getString("product_name")));
+                product_name.appendChild(document.createTextNode(productresultSet.getString("product_name")));
                 new_product.appendChild(product_name);
 
                 Element brand_name = document.createElement("brand");
-                brand_name.appendChild(document.createTextNode(resultSet.getString("brand")));
+                brand_name.appendChild(document.createTextNode(productresultSet.getString("brand")));
                 new_product.appendChild(brand_name);
 
                 Element category = document.createElement("category");
-                category.appendChild(document.createTextNode(resultSet.getString("category")));
+                category.appendChild(document.createTextNode(productresultSet.getString("category")));
                 new_product.appendChild(category);
 
                 Element store_sales = document.createElement("store_sales");
-                category.appendChild(document.createTextNode(resultSet.getString("store_sales")));
                 new_product.appendChild(store_sales);
 
+                Element store_name = document.createElement("store_name");
+                store_name.appendChild(document.createTextNode(productresultSet.getString("store_name")));
+                store_sales.appendChild(store_name);
+
                 Element units_sold = document.createElement("units_sold");
-                category.appendChild(document.createTextNode(resultSet.getString("units_sold")));
+                units_sold.appendChild(document.createTextNode(productresultSet.getString("units_sold")));
                 store_sales.appendChild(units_sold);
             }
 
@@ -278,7 +283,7 @@ public class summary {
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
             DOMSource source = new DOMSource(document);
-            File outputFile = new File("columns.xml");
+            File outputFile = new File("C:/Users/AVuser/IdeaProjects/5/athaker/src/"+file_name);
             FileWriter fileWriter = new FileWriter(outputFile);
             StreamResult result = new StreamResult(fileWriter);
             transformer.transform(source, result);
