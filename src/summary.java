@@ -1,3 +1,8 @@
+// References
+//https://docs.oracle.com/javase/tutorial/jdbc/basics/index.html
+// https://www.w3schools.com/xml/met_document_createelement.asp
+// https://www.w3schools.com/xml/dom_document.asp
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -8,13 +13,10 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
-import java.io.InputStream;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Properties;
 import java.util.Scanner;
 
 public class summary {
@@ -55,6 +57,7 @@ public class summary {
             System.out.print("Enter date in the format (YYYY-MM-DD):");
             String start_date = sc.nextLine();
 
+            // convert it into appropriate format
             DateTimeFormatter start_formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate starting_date = LocalDate.parse(start_date, start_formatter);
             System.out.println("Input date and time: " + starting_date);
@@ -63,6 +66,7 @@ public class summary {
             System.out.print("Enter date and time (YYYY-MM-DD):");
             String end_date = sc.nextLine();
 
+            //convert it into appropriate format
             DateTimeFormatter end_formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate ending_date = LocalDate.parse(end_date, end_formatter);
             System.out.println("Input date and time: " + ending_date);
@@ -92,10 +96,10 @@ public class summary {
 
            resultSet = statement.executeQuery(customer_info);
 
-
-            DocumentBuilderFactory document_factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder doc_builder = document_factory.newDocumentBuilder();
-            Document document = doc_builder.newDocument();
+           // Building the xml file
+           DocumentBuilderFactory document_factory = DocumentBuilderFactory.newInstance();
+           DocumentBuilder doc_builder = document_factory.newDocumentBuilder();
+           Document document = doc_builder.newDocument();
 
             // Create activity summary element - root element
             Element root = document.createElement("activity_summary");
@@ -117,16 +121,21 @@ public class summary {
             end_date_xml.appendChild(document.createTextNode(end_date));
             time_span.appendChild(end_date_xml);
 
-            // create element to hold all list of customers
+            // create element to hold the info of customers
             Element customer_list = document.createElement("customer_list");
             // append customer_list element to root
             root.appendChild(customer_list);
 
+            // create element that holds the info of products
             Element product_list = document.createElement("product_list");
+            // append product_list element to root node
             root.appendChild(product_list);
 
+            // create element that holds the info of stores.
             Element store_list = document.createElement("store_list");
+            // append store_list element to root node
             root.appendChild(store_list);
+
 
             while(resultSet.next()){
                 Element customer = document.createElement("customer");
@@ -148,7 +157,6 @@ public class summary {
                 address.appendChild(city);
 
                 Element state = document.createElement("state");
-                System.out.println(resultSet.getString("state"));
                 state.appendChild(document.createTextNode(resultSet.getString("state")));
                 address.appendChild(state);
 
@@ -164,66 +172,60 @@ public class summary {
                 bicycles_purchased.appendChild(document.createTextNode(String.valueOf(resultSet.getDouble("bicycles_purchased"))));
                 customer.appendChild(bicycles_purchased);
             }
-         /*
-            String product_info = "SELECT p.product_name AS ProductName, b.brand_name AS BrandName, "
-                    + "c.category_name AS CategoryName, s.store_name AS StoreName, "
-                    + "SUM(oi.quantity) AS UnitsSold "
-                    + "FROM orders o "
-                    + "JOIN order_items oi ON o.order_id = oi.order_id "
-                    + "JOIN products p ON oi.product_id = p.product_id "
-                    + "JOIN brands b ON p.brand_id = b.brand_id "
-                    + "JOIN categories c ON p.category_id = c.category_id "
-                    + "JOIN stores s ON o.store_id = s.store_id "
-                    + "WHERE p.product_id NOT IN ("
-                    + "SELECT DISTINCT oi2.product_id "
-                    + "FROM orders o2 "
-                    + "JOIN order_items oi2 ON o2.order_id = oi2.order_id "
-                    + "WHERE o2.order_date < '2023-01-01') "
-                    + "AND o.order_date BETWEEN '2023-01-01' AND '2023-03-31' "
-                    + "GROUP BY p.product_id, b.brand_name, c.category_name, s.store_name "
-                    + "HAVING MIN(o.order_date) BETWEEN '2023-01-01' AND '2023-03-31'";
 
-            resultSet = statement.executeQuery(product_info);
-            */
-            // Process the ResultSet object and print out the results
-           /* while (resultSet.next()) {
-                String productName = resultSet.getString("ProductName");
-                String brandName = resultSet.getString("BrandName");
-                String categoryName = resultSet.getString("CategoryName");
-                String storeName = resultSet.getString("StoreName");
-                int unitsSold = resultSet.getInt("UnitsSold");
+            // storing the product_information
+            String product_info = "SELECT product.product_name AS product_name, " +
+                    "brand.brand_name AS brand, " +
+                    "category.category_name AS category, " +
+                    "store.store_name AS store_name, " +
+                    "SUM(order_items.quantity) AS units_sold " +
+                    "FROM orders orders " +
+                    "JOIN order_items order_items ON orders.order_id = order_items.order_id " +
+                    "JOIN products product ON order_items.product_id = product.product_id " +
+                    "JOIN brands brand ON product.brand_id = brand.brand_id " +
+                    "JOIN categories category ON product.category_id = category.category_id " +
+                    "JOIN stores store ON orders.store_id = store.store_id " +
+                    "WHERE product.product_id NOT IN ( " +
+                    "    SELECT DISTINCT order_items.product_id " +
+                    "    FROM orders " +
+                    "    JOIN order_items  ON orders.order_id = order_items.order_id " +
+                    "    WHERE orders.order_date < '2016-01-01' " +
+                    ") " +
+                    "AND orders.order_date >= '2016-01-01' AND orders.order_date <= '2016-12-31' " +
+                    "GROUP BY product.product_id, brand.brand_name, category.category_name, store.store_name " +
+                    "HAVING MIN(orders.order_date) >= '2016-01-01' AND MIN(orders.order_date) <= '2016-12-31'";
 
-                System.out.println(productName + ", " + brandName + ", " + categoryName + ", " + storeName + ", " + unitsSold);
-            }
-            */
-            // sql query for getting- Store Information
 
-               /*
-                // product_information
+            productresultSet = statement.executeQuery(product_info);
+
+            // continue building xml for storing product information
+            while(productresultSet.next()){
                 Element new_product = document.createElement("new_product");
                 root.appendChild(new_product);
 
                 Element product_name = document.createElement("product_name");
-              //  product_name.appendChild(document.createTextNode(resultSet.getString("")));
+                product_name.appendChild(document.createTextNode(resultSet.getString("product_name")));
                 new_product.appendChild(product_name);
 
                 Element brand_name = document.createElement("brand");
-                //brand_name.appendChild(document.createTextNode(resultSet.getString("")));
+                brand_name.appendChild(document.createTextNode(resultSet.getString("brand")));
                 new_product.appendChild(brand_name);
 
-               // String[] categories = resultSet.getString("category_names").split(", ");
-               // for (String i : categories) {
-                    Element category_final = document.createElement("category");
-                 //   category_final.appendChild(document.createTextNode(""));
-                    new_product.appendChild(category_final);
-
+                Element category = document.createElement("category");
+                category.appendChild(document.createTextNode(resultSet.getString("category")));
+                new_product.appendChild(category);
 
                 Element store_sales = document.createElement("store_sales");
+                category.appendChild(document.createTextNode(resultSet.getString("store_sales")));
                 new_product.appendChild(store_sales);
 
                 Element units_sold = document.createElement("units_sold");
+                category.appendChild(document.createTextNode(resultSet.getString("units_sold")));
                 store_sales.appendChild(units_sold);
-                */
+            }
+
+            // storing the information about the store
+
             String store_info = "SELECT " +
                     "store.store_name, " +
                     "store.city AS store_city, " +
@@ -250,7 +252,7 @@ public class summary {
                 store_list.appendChild(store_name);
 
                 Element store_city = document.createElement("store_city");
-                //store_city.appendChild(document.createTextNode(storeresultSet.getString("store_city")));
+                store_city.appendChild(document.createTextNode(storeresultSet.getString("store_city")));
                 store_list.appendChild(store_city);
 
                 Element employee_count = document.createElement("employee_count");
@@ -265,28 +267,13 @@ public class summary {
                 store_list.appendChild(customer_sales);
 
                 Element customer_name_store = document.createElement("customer_name");
+                customer_name_store.appendChild(document.createTextNode(storeresultSet.getString("customer_name")));
                 customer_sales.appendChild(customer_name_store);
 
                 Element customer_sales_value = document.createElement("customer_sales_value");
+                customer_sales_value.appendChild(document.createTextNode(storeresultSet.getString("customer_sales_value")));
                 customer_sales.appendChild(customer_sales_value);
 
-                /*   String store_name = resultSet.getString("store_name");
-                String city = resultSet.getString("city");
-                int employee_count = resultSet.getInt("employee_count");
-                int customers_served = resultSet.getInt("customers_served");
-                String customer_name = resultSet.getString("customer_name");
-                double customer_sales_value = resultSet.getDouble("customer_sales_value");
-
-                // Display the store information
-                System.out.println("Store Name: " + store_name);
-                System.out.println("City: " + city);
-                System.out.println("Number of Employees: " + employee_count);
-                System.out.println("Number of Customers served by the employee: " + customers_served);
-                System.out.println("Customer name"+customer_name);
-                System.out.println("Total Sales: " + customer_sales_value);
-                System.out.println();
-
-              */
             }
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
@@ -296,28 +283,7 @@ public class summary {
             StreamResult result = new StreamResult(fileWriter);
             transformer.transform(source, result);
 
-/*
-            ResultSetMetaData rsmd = resultSet.getMetaData();
-            int columnCount = rsmd.getColumnCount();
 
-            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-            Document doc = docBuilder.newDocument();
-
-            Element rootElement = doc.createElement("activity_summary");
-            doc.appendChild(rootElement);
-
-            Element columnElement = doc.createElement("time_span");
-            columnElement.setAttribute("name", rsmd.getColumnName(i));
-            columnElement.setAttribute("type", rsmd.getColumnTypeName(i));
-            rootElement.appendChild(columnElement);
-
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            Transformer transformer = transformerFactory.newTransformer();
-            DOMSource source = new DOMSource(doc);
-            StreamResult result = new StreamResult(new File("columns.xml"));
-            transformer.transform(source, result);
-*/
             statement.close();
             connect.close();
         } catch (Exception e) {
