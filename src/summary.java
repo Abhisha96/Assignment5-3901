@@ -59,19 +59,9 @@ public class summary {
             System.out.print("Enter date in the format (YYYY-MM-DD):");
             String start_date = sc.nextLine();
 
-            // convert it into appropriate format
-            DateTimeFormatter start_formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDate starting_date = LocalDate.parse(start_date, start_formatter);
-            System.out.println("Input date and time: " + starting_date);
-
             //Input the end date from the keyboard
             System.out.print("Enter date and time (YYYY-MM-DD):");
             String end_date = sc.nextLine();
-
-            //convert it into appropriate format
-            DateTimeFormatter end_formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDate ending_date = LocalDate.parse(end_date, end_formatter);
-            System.out.println("Input date and time: " + ending_date);
 
             //Input the name of the file from the keyboard
             String file_name = sc.nextLine();
@@ -92,7 +82,7 @@ public class summary {
                     "JOIN order_items order_items ON order_items.order_id = order_items.order_id " +
                     "JOIN products product ON order_items.product_id = product.product_id " +
                     "JOIN brands brand ON product.brand_id = brand.brand_id " +
-                    "WHERE orders.order_date >= '2016-01-01' AND orders.order_date <= '2022-12-31' " +
+                    "WHERE orders.order_date >= '"+ start_date +"' AND orders.order_date <= '"+end_date+"'" +
                     "GROUP BY customers.first_name, customers.last_name, customers.street, customers.city, customers.state, customers.zip_code, brand.brand_name " +
                     "HAVING COUNT(orders.order_id) > 0";
 
@@ -191,11 +181,11 @@ public class summary {
                     "    SELECT DISTINCT order_items.product_id " +
                     "    FROM orders " +
                     "    JOIN order_items  ON orders.order_id = order_items.order_id " +
-                    "    WHERE orders.order_date < '2016-01-01' " +
+                    "    WHERE orders.order_date < '"+ start_date +"' " +
                     ") " +
-                    "AND orders.order_date >= '2016-01-01' AND orders.order_date <= '2016-12-31' " +
+                    "AND orders.order_date >= '"+start_date+"' AND orders.order_date <= '"+end_date+"' " +
                     "GROUP BY product.product_id, brand.brand_name, category.category_name, store.store_name " +
-                    "HAVING MIN(orders.order_date) >= '2016-01-01' AND MIN(orders.order_date) <= '2016-12-31'";
+                    "HAVING MIN(orders.order_date) >= '"+start_date+"' AND MIN(orders.order_date) <= '"+end_date+"'";
 
 
             productresultSet = statement.executeQuery(product_info);
@@ -244,7 +234,7 @@ public class summary {
                     "LEFT JOIN orders orders ON staff.store_id = orders.store_id " +
                     "LEFT JOIN order_items order_items ON orders.order_id = order_items.order_id " +
                     "WHERE " +
-                    "orders.order_date >= '2016-01-01' AND orders.order_date <= '2022-12-31' " +
+                    "orders.order_date >= '"+start_date+"' AND orders.order_date <= '"+end_date+"' " +
                     "GROUP BY " +
                     "store.store_id, orders.customer_id";
 
